@@ -14,54 +14,60 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ReportController;
 
-// --- [بداية الحل النهائي] ---
-// هذا المسار العام يعترض أي طلب من نوع OPTIONS
-// ويرد عليه بالترويسات الصحيحة التي تسمح بـ CORS.
-Route::options('/{any}', function (Request $request) {
-    return response('', 200)
-        ->header('Access-Control-Allow-Origin', 'https://tender.hr-core.ly' )
-        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-})->where('any', '.*');
-// --- [نهاية الحل النهائي] ---
-
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
 */
 
 // --- المسارات العامة (Public Routes) ---
+// لا تحتاج إلى مصادقة
 Route::post('/login', [AuthController::class, 'login']);
 
 
 // --- المسارات المحمية (Protected Routes) ---
+// تتطلب مصادقة باستخدام Sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('/dashboard', [DashboardController::class, 'stats'])
-        ->middleware('can:dashboard.view')
-        ->name('dashboard.stats');
 
-    Route::prefix('reports')->name('reports.')->group(function () {
+     Route::get('/dashboard', [DashboardController::class, 'stats'])
+         ->middleware('can:dashboard.view') // حماية المسار بالصلاحية
+         ->name('dashboard.stats');
+
+
+          Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/company-statement/{company}', [ReportController::class, 'companyStatement'])
-            ->middleware('can:view,company');
+             ->middleware('can:view,company'); // يمكن فقط لمن يرى الشركة أن يرى تقريرها
     });
 
+    // تسجيل الخروج
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // جلب بيانات المستخدم الحالي مع أدواره وصلاحياته
     Route::get('/user', function (Request $request) {
         $user = $request->user()->load('roles:id,name', 'roles.permissions:id,name');
         return response()->json($user);
     });
 
+    // --- مسارات إدارة الأدوار والصلاحيات ---
+    // جلب كل الصلاحيات المتاحة في النظام (مفيد عند تعديل دور)
     Route::get('roles/permissions', [RoleController::class, 'getAllPermissions'])->name('roles.permissions');
     Route::apiResource('roles', RoleController::class);
 
+    // --- مسارات إدارة المستخدمين ---
     Route::apiResource('users', UserController::class);
 
+
+    // --- مسارات إدارة كيانات المشروع ---
+    // استخدام apiResource لتعريف كل المسارات (index, store, show, update, destroy) تلقائيًا
     Route::apiResource('companies', CompanyController::class);
     Route::apiResource('projects', ProjectController::class);
     Route::apiResource('payments', PaymentController::class);
-    Route::apiResource('documents', DocumentController::class)->except(['update']);
+    Route::apiResource('documents', DocumentController::class)->except(['update']); // استثناء مسار التحديث للمستندات
+
 });

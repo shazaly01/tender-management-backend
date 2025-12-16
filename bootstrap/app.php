@@ -11,16 +11,23 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        // --- [بداية الإضافة] ---
-        // هذا السطر يخبر Laravel بتعطيل حماية CSRF
-        // لجميع المسارات التي تبدأ بـ /api/
-        // لأن الـ API يستخدم مصادقة Sanctum (Bearer Token) بدلاً من الجلسات.
+    ->withMiddleware(function (Middleware $middleware) {
+
+        // --- [بداية إضافة CORS] ---
+        // تسجيل HandleCors كـ Middleware عالمي.
+        // سيقرأ إعداداته من ملف config/cors.php الذي أنشأناه.
+        $middleware->use([
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        // --- [نهاية إضافة CORS] ---
+
+
+        // تعطيل حماية CSRF لمسارات الـ API
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
-        // --- [نهاية الإضافة] ---
+
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
