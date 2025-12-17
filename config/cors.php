@@ -19,10 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://tender.hr-core.ly', // **الأصل المحدد الذي سبب المشكلة**
-        env('FRONTEND_URL', 'http://localhost:5173' ), // متغير بيئة للواجهة الأمامية
-    ],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
@@ -32,6 +29,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];
