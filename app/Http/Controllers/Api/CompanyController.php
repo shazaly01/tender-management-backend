@@ -19,11 +19,29 @@ class CompanyController extends Controller
         $this->authorizeResource(Company::class, 'company');
     }
 
-    public function index(): AnonymousResourceCollection
-    {
-        $companies = Company::latest()->paginate(15);
-        return CompanyResource::collection($companies);
+ public function index(): AnonymousResourceCollection
+{
+    // ابدأ بالـ query وليس بالـ ::latest() مباشرة
+    $query = Company::query();
+
+    // التحقق من استقبال كلمة البحث
+    if (request()->filled('search')) {
+        $search = request('search');
+
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('tax_number', 'like', "%{$search}%")
+              ->orWhere('license_number', 'like', "%{$search}%");
+        });
+    } else {
+        // إذا لم يوجد بحث، رتب النتائج كالمعتاد
+        $query->latest();
     }
+
+    $companies = $query->paginate(15);
+
+    return CompanyResource::collection($companies);
+}
 
     public function store(StoreCompanyRequest $request): JsonResponse
     {

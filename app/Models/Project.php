@@ -28,4 +28,11 @@ class Project extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+
+    // أضف هذه العلاقة في كلا الملفين
+public function documents()
+{
+    return $this->morphMany(Document::class, 'documentable');
+}
 }

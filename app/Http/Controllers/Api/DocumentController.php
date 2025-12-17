@@ -20,46 +20,56 @@ class DocumentController extends Controller
         $this->authorizeResource(Document::class, 'document');
     }
 
-    public function index(): AnonymousResourceCollection
-    {
-        // التحقق من الصلاحية يدويًا
-        $this->authorize('viewAny', Document::class);
+   public function index(): AnonymousResourceCollection
+{
+    $this->authorize('viewAny', Document::class);
 
-        $query = Document::with('company');
+    // 1. استخدام العلاقة الجديدة documentable
+    $query = Document::with('documentable');
 
-        if ($companyId = request('company_id')) {
-            $query->where('company_id', $companyId);
-        }
+    // 2. الفلترة بناءً على المعطيات الجديدة القادمة من الواجهة
+    if (request()->has('target_id') && request()->has('target_type')) {
+        $modelType = request('target_type') === 'company'
+            ? \App\Models\Company::class
+            : \App\Models\Project::class;
 
-        $documents = $query->latest()->paginate(20);
-
-        return DocumentResource::collection($documents);
+        $query->where('documentable_id', request('target_id'))
+              ->where('documentable_type', $modelType);
     }
 
-    public function store(StoreDocumentRequest $request): JsonResponse
-    {
-        // 1. تخزين الملف
-        // 'documents' هو اسم المجلد داخل storage/app/public
-        $path = $request->file('file')->store('documents', 'public');
+    $documents = $query->latest()->paginate(20);
+    return DocumentResource::collection($documents);
+}
 
-        // 2. إنشاء السجل في قاعدة البيانات
-        $document = Document::create([
-            'name' => $request->name,
-            'file_path' => $path,
-            'company_id' => $request->company_id,
-        ]);
+   public function store(StoreDocumentRequest $request): JsonResponse
+{
+    $path = $request->file('file')->store('documents', 'public');
 
-        return response()->json([
-            'message' => 'Document uploaded successfully.',
-            'data' => DocumentResource::make($document),
-        ], Response::HTTP_CREATED);
-    }
+    // تحديد الموديل بناءً على النوع المرسل
+    $modelType = $request->target_type === 'company'
+        ? \App\Models\Company::class
+        : \App\Models\Project::class;
 
-    public function show(Document $document): DocumentResource
-    {
-        $document->load('company');
-        return DocumentResource::make($document);
-    }
+    $document = Document::create([
+        'name' => $request->name,
+        'file_path' => $path,
+        'documentable_id' => $request->target_id, // سيخزن كـ DECIMAL(18,0)
+        'documentable_type' => $modelType,
+    ]);
+
+    return response()->json([
+        'message' => 'Document uploaded successfully.',
+        'data' => DocumentResource::make($document),
+    ], Response::HTTP_CREATED);
+}
+
+
+ public function show(Document $document): DocumentResource
+{
+    // تحميل العلاقة متعددة الأوجه بدلاً من الشركة فقط
+    $document->load('documentable');
+    return DocumentResource::make($document);
+}
 
     // لا نحتاج لدالة update، لأن تحديث مستند هو عملية حذف ثم رفع
 

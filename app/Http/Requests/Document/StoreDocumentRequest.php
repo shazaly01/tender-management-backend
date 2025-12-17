@@ -12,12 +12,14 @@ class StoreDocumentRequest extends FormRequest
         return $this->user()->can('create', Document::class);
     }
 
-    public function rules(): array
-    {
-        return [
-            'name' => 'required|string|max:255',
-            'file' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:10240', // ملف، الأنواع المسموحة، الحجم الأقصى 10MB
-            'company_id' => 'required|integer|exists:companies,id',
-        ];
-    }
+   public function rules(): array
+{
+    return [
+        'name' => 'required|string|max:255',
+        'file' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:10240',
+        // التحقق الديناميكي
+        'target_id' => 'required|numeric',
+        'target_type' => 'required|in:company,project',
+    ];
+}
 }

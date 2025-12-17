@@ -18,21 +18,33 @@ class ProjectController extends Controller
         $this->authorizeResource(Project::class, 'project');
     }
 
-    public function index(): AnonymousResourceCollection // <-- تم إضافة النوع للوضوح
+   public function index(): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Project::class);
 
-        // === [التعديل هنا] ===
-        // أضفنا withSum لحساب مجموع حقل 'amount' من علاقة 'payments'
-        // سيتم تخزين النتيجة في خاصية جديدة اسمها `payments_sum_amount`
+        // 1. نبدأ الاستعلام مع العلاقات وحساب المجموع
         $query = Project::query()
             ->with('company')
-            ->withSum('payments', 'amount'); // <-- السطر الجديد والمهم
+            ->withSum('payments', 'amount');
 
-        if ($companyId = request('company_id')) { // <-- تحسين بسيط
+        // 2. البحث الذكي (اسم المشروع أو اسم الشركة)
+        if ($search = request('search')) {
+            $query->where(function($q) use ($search) {
+                // البحث في اسم المشروع
+                $q->where('name', 'like', "%{$search}%")
+                  // البحث في اسم الشركة المرتبطة عبر العلاقة
+                  ->orWhereHas('company', function($companyQuery) use ($search) {
+                      $companyQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // 3. فلترة الشركة (إذا تم اختيار شركة محددة من القائمة المنسدلة)
+        if ($companyId = request('company_id')) {
             $query->where('company_id', $companyId);
         }
 
+        // 4. الترتيب والترقيم
         $projects = $query->latest()->paginate(15);
 
         return ProjectResource::collection($projects);

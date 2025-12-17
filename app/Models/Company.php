@@ -33,12 +33,9 @@ class Company extends Model
         return $this->hasMany(Project::class);
     }
 
-    /**
-     * Get the documents for the company.
-     */
-    // 5. تعريف علاقة "لديه العديد من" المستندات
-    public function documents()
-    {
-        return $this->hasMany(Document::class);
-    }
+  // أضف هذه العلاقة في كلا الملفين
+public function documents()
+{
+    return $this->morphMany(Document::class, 'documentable');
+}
 }

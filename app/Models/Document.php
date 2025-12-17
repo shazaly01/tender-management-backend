@@ -14,7 +14,8 @@ class Document extends Model
     protected $fillable = [
         'name',
         'file_path',
-        'company_id',
+        'documentable_id',
+        'documentable_type',
     ];
 
     // --- 1. الإضافة هنا: نخبر لارافيل بإرجاع حقل url دائماً مع البيانات ---
@@ -35,9 +36,9 @@ class Document extends Model
         return null;
     }
 
-    // علاقة الشركة
-    public function company()
-    {
-        return $this->belongsTo(Company::class);
-    }
+
+public function documentable()
+{
+    return $this->morphTo();
+}
 }
