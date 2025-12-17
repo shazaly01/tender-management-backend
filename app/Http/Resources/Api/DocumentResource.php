@@ -4,7 +4,6 @@ namespace App\Http\Resources\Api;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class DocumentResource extends JsonResource
 {
@@ -13,8 +12,12 @@ class DocumentResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            // إنشاء رابط كامل للملف
-            'url' => Storage::url($this->file_path),
+
+            // --- التعديل هنا ---
+            // نستخدم الخاصية $this->url التي أنشأناها في الموديل
+            // هذا سيضمن أن الرابط كامل وصحيح (http://localhost:8000/storage/...)
+            'url' => $this->url,
+
             'company' => CompanyResource::make($this->whenLoaded('company')),
             'created_at' => $this->created_at->toDateTimeString(),
         ];
