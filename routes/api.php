@@ -41,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
           Route::prefix('reports')->name('reports.')->group(function () {
+
+
+            Route::get('/companies-summary', [ReportController::class, 'companiesSummary'])
+         ->middleware('can:company.view');
+
         Route::get('/company-statement/{company}', [ReportController::class, 'companyStatement'])
              ->middleware('can:view,company'); // يمكن فقط لمن يرى الشركة أن يرى تقريرها
     });
