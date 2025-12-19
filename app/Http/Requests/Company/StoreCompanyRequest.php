@@ -16,6 +16,7 @@ class StoreCompanyRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'commercial_record' => 'nullable|string|max:255|unique:companies,commercial_record',
             'tax_number' => 'nullable|string|max:255|unique:companies,tax_number',
             'license_number' => 'nullable|string|max:255', // <-- [تمت الإضافة هنا]
             'address' => 'nullable|string',

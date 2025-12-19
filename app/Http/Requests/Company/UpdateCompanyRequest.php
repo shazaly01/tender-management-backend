@@ -16,6 +16,7 @@ class UpdateCompanyRequest extends FormRequest
         $companyId = $this->route('company')->id;
         return [
             'name' => 'sometimes|required|string|max:255',
+            'commercial_record' => 'nullable|string|max:255|unique:companies,commercial_record,' . $this->company->id,
             'tax_number' => 'sometimes|nullable|string|max:255|unique:companies,tax_number,' . $companyId,
             'license_number' => 'sometimes|nullable|string|max:255', // <-- [تمت الإضافة هنا]
             'address' => 'sometimes|nullable|string',

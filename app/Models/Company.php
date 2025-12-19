@@ -18,6 +18,7 @@ class Company extends Model
     // 3. تحديد الحقول القابلة للتعبئة
     protected $fillable = [
         'name',
+        'commercial_record',
         'tax_number',
         'license_number',
         'address',

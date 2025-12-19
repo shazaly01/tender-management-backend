@@ -12,6 +12,7 @@ class CompanyResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'commercial_record' => $this->commercial_record,
             'tax_number' => $this->tax_number,
             'license_number' => $this->license_number, // <-- [تمت الإضافة هنا]
             'address' => $this->address,

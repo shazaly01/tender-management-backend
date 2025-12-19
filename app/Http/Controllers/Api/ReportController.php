@@ -53,7 +53,7 @@ class ReportController extends Controller
         ]);
     }
 
-    public function companyStatement(Company $company): JsonResponse
+   public function companyStatement(Company $company): JsonResponse
     {
         // تحميل المشاريع مع حساب إجمالي الدفعات لكل مشروع
         $projects = $company->projects()->withSum('payments', 'amount')->get();
@@ -78,6 +78,12 @@ class ReportController extends Controller
                 'company' => [
                     'id' => $company->id,
                     'name' => $company->name,
+                    // === تمت إضافة البيانات المفقودة هنا ===
+                    'tax_number' => $company->tax_number,
+                    'license_number' => $company->license_number,
+                    'owner_name' => $company->owner_name,
+                    'address' => $company->address,
+                    // ======================================
                 ],
                 'projects' => $projectsData,
                 'summary' => [
