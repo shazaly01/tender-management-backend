@@ -34,6 +34,7 @@ class PermissionSeeder extends Seeder
             'document.view', 'document.create', 'document.update', 'document.delete',
 
             'setting.view', 'setting.update',
+            'backup.view', 'backup.create', 'backup.delete', 'backup.download',
 
         ];
 

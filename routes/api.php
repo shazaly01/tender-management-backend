@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\BackupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,27 @@ Route::post('/login', [AuthController::class, 'login']);
 // --- المسارات المحمية (Protected Routes) ---
 // تتطلب مصادقة باستخدام Sanctum
 Route::middleware('auth:sanctum')->group(function () {
+
+
+
+// --- مسارات إدارة النسخ الاحتياطي ---
+    Route::prefix('backups')->name('backups.')->group(function () {
+        // عرض القائمة (يتطلب صلاحية backup.view)
+        Route::get('/', [BackupController::class, 'index'])
+            ->middleware('can:backup.view');
+
+        // إنشاء نسخة جديدة (يتطلب صلاحية backup.create)
+        Route::post('/', [BackupController::class, 'store'])
+            ->middleware('can:backup.create');
+
+        // تحميل النسخة (يتطلب صلاحية backup.download)
+        Route::get('/download', [BackupController::class, 'download'])
+            ->middleware('can:backup.download');
+
+        // حذف النسخة (يتطلب صلاحية backup.delete)
+        Route::delete('/', [BackupController::class, 'destroy'])
+            ->middleware('can:backup.delete');
+    });
 
 
      Route::get('/dashboard', [DashboardController::class, 'stats'])
