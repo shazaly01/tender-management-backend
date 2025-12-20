@@ -53,7 +53,7 @@ class DocumentController extends Controller
     $document = Document::create([
         'name' => $request->name,
         'file_path' => $path,
-        'documentable_id' => $request->target_id, // سيخزن كـ DECIMAL(18,0)
+        'documentable_id' => $request->target_id,
         'documentable_type' => $modelType,
     ]);
 
@@ -73,12 +73,11 @@ class DocumentController extends Controller
 
     // لا نحتاج لدالة update، لأن تحديث مستند هو عملية حذف ثم رفع
 
-    public function destroy(Document $document): Response
+   public function destroy(Document $document): Response
     {
-        // 1. حذف الملف من الـ storage
-        Storage::disk('public')->delete($document->file_path);
-
-        // 2. حذف السجل من قاعدة البيانات
+        // نكتفي بحذف السجل برمجياً (Soft Delete)
+        // يتم وضع تاريخ في عمود deleted_at
+        // يبقى الملف الفعلي آمناً في السيرفر لاستعادته في أي وقت
         $document->delete();
 
         return response()->noContent();

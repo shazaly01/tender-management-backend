@@ -20,28 +20,24 @@ class CompanyController extends Controller
     }
 
  public function index(): AnonymousResourceCollection
-{
-    // ابدأ بالـ query وليس بالـ ::latest() مباشرة
-    $query = Company::query();
+    {
+        $query = Company::query();
 
-    // التحقق من استقبال كلمة البحث
-    if (request()->filled('search')) {
-        $search = request('search');
+        if (request()->filled('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('tax_number', 'like', "%{$search}%")
+                  ->orWhere('license_number', 'like', "%{$search}%");
+            });
+        }
 
-        $query->where(function($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('tax_number', 'like', "%{$search}%")
-              ->orWhere('license_number', 'like', "%{$search}%");
-        });
-    } else {
-        // إذا لم يوجد بحث، رتب النتائج كالمعتاد
-        $query->latest();
+        // التعديل: تطبيق الترتيب دائماً في النهاية، سواء كان هناك بحث أم لا
+        $companies = $query->latest()->paginate(15);
+
+        return CompanyResource::collection($companies);
     }
 
-    $companies = $query->paginate(15);
-
-    return CompanyResource::collection($companies);
-}
 
     public function store(StoreCompanyRequest $request): JsonResponse
     {

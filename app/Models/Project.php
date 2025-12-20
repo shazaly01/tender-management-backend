@@ -36,4 +36,21 @@ public function documents()
 {
     return $this->morphMany(Document::class, 'documentable');
 }
+
+protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($project) {
+            // فحص وجود دفعات مالية
+            if ($project->payments()->exists()) {
+                abort(409, 'لا يمكن حذف المشروع لوجود دفعات مالية مسجلة عليه. يرجى حذف الدفعات أولاً.');
+            }
+
+            // فحص وجود مستندات
+            if ($project->documents()->exists()) {
+                abort(409, 'لا يمكن حذف المشروع لوجود مستندات مرفقة به.');
+            }
+        });
+    }
 }

@@ -39,4 +39,23 @@ public function documents()
 {
     return $this->morphMany(Document::class, 'documentable');
 }
+
+
+protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($company) {
+            // 1. فحص وجود مشاريع
+            if ($company->projects()->exists()) {
+                // نستخدم abort لإرجاع خطأ 409 (Conflict) مع رسالة واضحة
+                abort(409, 'لا يمكن حذف الشركة لوجود مشاريع مرتبطة بها. يرجى حذف المشاريع أولاً.');
+            }
+
+            // 2. فحص وجود مستندات (اختياري، إذا كنت تعتبر المستندات أبناء يجب حذفهم)
+            if ($company->documents()->exists()) {
+                abort(409, 'لا يمكن حذف الشركة لوجود مستندات مرفقة بها.');
+            }
+        });
+    }
 }
