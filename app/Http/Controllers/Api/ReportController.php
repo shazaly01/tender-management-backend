@@ -8,36 +8,41 @@ use Illuminate\Http\JsonResponse;
 
 class ReportController extends Controller
 {
-
-/**
+    /**
      * تقرير عام: ملخص مالي لكل الشركات
-     * يعرض: عدد المشاريع، إجمالي العقود، المدفوع، والمتبقي لكل شركة
+     * يعرض: عدد المشاريع، إجمالي القيم المستحقة، المدفوع، والمتبقي لكل شركة
      */
     public function companiesSummary(): JsonResponse
     {
-        // جلب الشركات مع عدد المشاريع ومجموع مبالغ العقود
-        // وجلب مجموع الدفعات من خلال المشاريع
-        $companies = Company::withCount('projects')
-            ->withSum('projects as total_contracts_value', 'contract_value')
-            ->get();
+        // --- [التعديل هنا] ---
+        // تم تغيير 'contract_value' إلى 'due_value' في الاستعلام
+       $companies = Company::withCount('projects')
+    ->withSum('projects as total_due_value', 'due_value')
+    ->withSum('projects as total_contract_value', 'contract_value') // <--- إضافة هذا السطر
+    ->get();
+
 
         $data = $companies->map(function ($company) {
             // حساب إجمالي المدفوعات لكل مشاريع هذه الشركة
-            // نستخدم pluck ثم sum لضمان الدقة المالية
             $totalPaid = $company->projects()->withSum('payments', 'amount')->get()->sum('payments_sum_amount');
 
-            $contractsValue = (float) ($company->total_contracts_value ?? 0);
+            // --- [التعديل هنا] ---
+            // تم تغيير 'total_contracts_value' إلى 'total_due_value'
+            $dueValue = (float) ($company->total_due_value ?? 0); // <--- تم التغيير
             $paidValue = (float) ($totalPaid ?? 0);
 
             return [
-                'id' => $company->id, // DECIMAL(18, 0)
+                'id' => $company->id,
                 'name' => $company->name,
-                'license_number' => $company->license_number, // رقم الرخصة التجارية
+                'license_number' => $company->license_number,
                 'tax_number' => $company->tax_number,
                 'projects_count' => $company->projects_count,
-                'total_contracts_value' => $contractsValue,
+                'total_contract_value' => (float) ($company->total_contract_value ?? 0),
+                // --- [التعديل هنا] ---
+                // تم تغيير اسم المفتاح في الـ JSON الناتج
+                'total_due_value' => $dueValue, // <--- تم التغيير
                 'total_paid' => $paidValue,
-                'total_remaining' => $contractsValue - $paidValue,
+                'total_remaining' => $dueValue - $paidValue,
             ];
         });
 
@@ -46,14 +51,20 @@ class ReportController extends Controller
             'grand_summary' => [
                 'total_companies' => $data->count(),
                 'total_projects' => $data->sum('projects_count'),
-                'grand_total_value' => $data->sum('total_contracts_value'),
+                'grand_total_contract_value' => $data->sum('total_contract_value'),
+                // --- [التعديل هنا] ---
+                // تم تغيير أسماء المفاتيح في الإجماليات
+                'grand_total_due_value' => $data->sum('total_due_value'), // <--- تم التغيير
                 'grand_total_paid' => $data->sum('total_paid'),
                 'grand_total_remaining' => $data->sum('total_remaining'),
             ]
         ]);
     }
 
-   public function companyStatement(Company $company): JsonResponse
+    /**
+     * كشف حساب لشركة معينة
+     */
+    public function companyStatement(Company $company): JsonResponse
     {
         // تحميل المشاريع مع حساب إجمالي الدفعات لكل مشروع
         $projects = $company->projects()->withSum('payments', 'amount')->get();
@@ -64,13 +75,17 @@ class ReportController extends Controller
                 'id' => $project->id,
                 'name' => $project->name,
                 'contract_value' => (float) $project->contract_value,
+                // --- [التعديل هنا] ---
+                // تم تغيير 'contract_value' إلى 'due_value'
+                'due_value' => (float) $project->due_value, // <--- تم التغيير
                 'total_paid' => (float) $totalPaid,
-                'remaining' => (float) $project->contract_value - $totalPaid,
+                'remaining' => (float) $project->due_value - $totalPaid, // <--- تم التغيير
             ];
         });
 
-        // حساب الإجماليات
-        $totalContractsValue = $projectsData->sum('contract_value');
+        // --- [التعديل هنا] ---
+        // حساب الإجماليات باستخدام الاسم الجديد
+        $totalDueValue = $projectsData->sum('due_value'); // <--- تم التغيير
         $totalPaymentsReceived = $projectsData->sum('total_paid');
 
         return response()->json([
@@ -78,18 +93,19 @@ class ReportController extends Controller
                 'company' => [
                     'id' => $company->id,
                     'name' => $company->name,
-                    // === تمت إضافة البيانات المفقودة هنا ===
                     'tax_number' => $company->tax_number,
                     'license_number' => $company->license_number,
                     'owner_name' => $company->owner_name,
                     'address' => $company->address,
-                    // ======================================
                 ],
                 'projects' => $projectsData,
                 'summary' => [
-                    'total_contracts_value' => $totalContractsValue,
+                    // --- [التعديل هنا] ---
+                    // تم تغيير أسماء المفاتيح في ملخص كشف الحساب
+                    'total_due_value' => $totalDueValue, // <--- تم التغيير
+                    'total_contract_value' => $projectsData->sum('contract_value'),
                     'total_payments_received' => $totalPaymentsReceived,
-                    'total_remaining' => $totalContractsValue - $totalPaymentsReceived,
+                    'total_remaining' => $totalDueValue - $totalPaymentsReceived,
                 ]
             ]
         ]);

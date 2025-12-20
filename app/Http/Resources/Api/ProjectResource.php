@@ -13,8 +13,9 @@ class ProjectResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'project_owner' => $this->project_owner,
-            // تحويل القيمة إلى رقم عشري للتناسق
             'contract_value' => (float) $this->contract_value,
+            // تحويل القيمة إلى رقم عشري للتناسق
+            'due_value' => (float) $this->due_value,
             'award_date' => $this->award_date,
 
             // === [التعديل هنا] ===

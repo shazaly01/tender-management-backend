@@ -14,14 +14,18 @@ class DashboardController extends Controller
     {
         $companiesCount = Company::count();
         $projectsCount = Project::count();
-        $totalContractsValue = Project::sum('contract_value');
+        // --- [التعديل هنا] ---
+        // تم تغيير اسم العمود من 'contract_value' إلى 'due_value'
+        $totalDueValue = Project::sum('due_value');
         $totalPaymentsValue = Payment::sum('amount');
 
         return response()->json([
             'data' => [
                 'companies_count' => $companiesCount,
                 'projects_count' => $projectsCount,
-                'total_contracts_value' => (float) $totalContractsValue,
+                // --- [التعديل هنا] ---
+                // تم تغيير اسم المفتاح ليتوافق مع الواجهة الأمامية
+                'total_due_value' => (float) $totalDueValue,
                 'total_payments_value' => (float) $totalPaymentsValue,
             ]
         ]);

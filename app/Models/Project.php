@@ -14,6 +14,7 @@ class Project extends Model
         'name',
         'project_owner',
         'contract_value',
+        'due_value',
         'award_date',
         'company_id',
     ];
