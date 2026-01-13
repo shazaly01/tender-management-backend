@@ -24,7 +24,7 @@ class ProjectController extends Controller
 
         // 1. نبدأ الاستعلام مع العلاقات وحساب المجموع
         $query = Project::query()
-            ->with('company')
+            ->with(['company', 'calculationOption'])
             ->withSum('payments', 'amount');
 
         // 2. البحث الذكي (اسم المشروع أو اسم الشركة)
@@ -64,7 +64,7 @@ class ProjectController extends Controller
     {
         // === [التعديل هنا] ===
         // سنستخدم نفس الطريقة لتحميل المجموع لمشروع واحد
-        $project->loadSum('payments', 'amount')->load('company');
+        $project->loadSum('payments', 'amount')->load(['company', 'calculationOption']);
 
         return ProjectResource::make($project);
     }

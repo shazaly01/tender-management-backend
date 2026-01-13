@@ -75,6 +75,9 @@ class ReportController extends Controller
                 'id' => $project->id,
                 'name' => $project->name,
                 'contract_value' => (float) $project->contract_value,
+                'contract_number' => $project->contract_number,
+                'project_owner' => $project->project_owner,
+                'region' => $project->region, // أضفت المنطقة أيضاً للاحتياط
                 // --- [التعديل هنا] ---
                 // تم تغيير 'contract_value' إلى 'due_value'
                 'due_value' => (float) $project->due_value, // <--- تم التغيير

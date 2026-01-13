@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\BackupController;
+use App\Http\Controllers\Api\CalculationOptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,7 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- مسارات إدارة المستخدمين ---
     Route::apiResource('users', UserController::class);
 
-
+    Route::get('calculation-options', [CalculationOptionController::class, 'index']);
     // --- مسارات إدارة كيانات المشروع ---
     // استخدام apiResource لتعريف كل المسارات (index, store, show, update, destroy) تلقائيًا
     Route::apiResource('companies', CompanyController::class);

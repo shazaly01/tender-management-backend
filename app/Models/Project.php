@@ -13,10 +13,13 @@ class Project extends Model
     protected $fillable = [
         'name',
         'project_owner',
+        'contract_number',
+        'region',
         'contract_value',
         'due_value',
         'award_date',
         'company_id',
+        'calculation_option_id'
     ];
 
     // علاقة "ينتمي إلى" شركة واحدة
@@ -53,5 +56,11 @@ protected static function boot()
                 abort(409, 'لا يمكن حذف المشروع لوجود مستندات مرفقة به.');
             }
         });
+    }
+
+
+    public function calculationOption()
+    {
+        return $this->belongsTo(CalculationOption::class);
     }
 }

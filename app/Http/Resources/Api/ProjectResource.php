@@ -13,6 +13,16 @@ class ProjectResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'project_owner' => $this->project_owner,
+            'contract_number' => $this->contract_number,
+            'region' => $this->region,
+            // نرسل الكائن كاملاً إذا كان محملاً، أو المعرف فقط إذا لم يكن
+            'calculation_option' => $this->whenLoaded('calculationOption', function() {
+                return [
+                    'id' => $this->calculationOption->id,
+                    'name' => $this->calculationOption->name,
+                ];
+            }),
+            'calculation_option_id' => $this->calculation_option_id, // مفيد للـ Edit Form
             'contract_value' => (float) $this->contract_value,
             // تحويل القيمة إلى رقم عشري للتناسق
             'due_value' => (float) $this->due_value,

@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             UserSeeder::class,
+            CalculationOptionSeeder::class,
             // يمكنك إضافة seeders أخرى هنا لاحقاً
         ]);
     }

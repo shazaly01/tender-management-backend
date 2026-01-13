@@ -15,9 +15,8 @@ class DocumentController extends Controller
 {
     public function __construct()
     {
-        // تطبيق الصلاحيات تلقائيًا
-        // ملاحظة: authorizeResource لا تدعم index بشكل جيد مع الفلترة، لذا سنتحقق منها يدويًا
-       $this->authorizeResource(Document::class, 'document');
+        // التغيير 1: استثناء 'destroy' من التحقق التلقائي لنتمكن من تخصيص رسالة الخطأ
+        $this->authorizeResource(Document::class, 'document', ['except' => ['destroy']]);
     }
 
    public function index(): AnonymousResourceCollection
@@ -90,9 +89,17 @@ class DocumentController extends Controller
         return response()->file($path);
     }
 
-    public function destroy(Document $document): Response
+    public function destroy(Document $document)
     {
+        // التحقق اليدوي من الصلاحية
+        if (request()->user()->cannot('delete', $document)) {
+            return response()->json([
+                'message' => 'عذراً، ليس لديك صلاحية لحذف هذا الملف.'
+            ], 403); // 403 Forbidden
+        }
+
         $document->delete();
+
         return response()->noContent();
     }
 
