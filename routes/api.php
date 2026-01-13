@@ -26,6 +26,10 @@ use App\Http\Controllers\Api\BackupController;
 |
 */
 
+Route::get('/documents/{document}/download', [DocumentController::class, 'download'])
+    ->name('documents.download')
+    ->middleware('signed');
+
 // --- المسارات العامة (Public Routes) ---
 // لا تحتاج إلى مصادقة
 Route::post('/login', [AuthController::class, 'login']);

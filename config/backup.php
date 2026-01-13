@@ -16,6 +16,7 @@ return [
                  */
                 'include' => [
                     storage_path('app/public'),
+                    storage_path('app/private/private_documents'),
                 ],
 
                 /*
@@ -94,7 +95,10 @@ return [
          *
          * If you do not want any compressor at all, set it to null.
          */
-        'database_dump_compressor' => null,
+        /*
+         * استخدام Gzip لضغط ملف الـ SQL وتوفير مساحة كبيرة
+         */
+        'database_dump_compressor' => \Spatie\DbDumper\Compressors\GzipCompressor::class,
 
         /*
          * If specified, the database dumped file name will contain a timestamp (e.g.: 'Y-m-d-H-i-s').

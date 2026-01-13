@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BackupController extends Controller
@@ -16,34 +15,31 @@ class BackupController extends Controller
      */
     public function index()
     {
-        // اسم المجلد الذي حددناه في config/backup.php (عادة هو اسم التطبيق)
-        // تأكد أن هذا يطابق الاسم في 'name' داخل config/backup.php
-        // إذا لم تكن متأكداً، افتح storage/app وانظر اسم المجلد
         $backupName = config('backup.backup.name');
 
-        // التحقق من وجود المجلد
-        if (!Storage::disk('local')->exists($backupName)) {
+        // تعديل 1: استخدام disk('local') دائماً لتوحيد التعامل
+        $disk = Storage::disk('local');
+
+        if (!$disk->exists($backupName)) {
+            // محاولة إنشاء المجلد إذا لم يكن موجوداً لتجنب الأخطاء
+            $disk->makeDirectory($backupName);
             return response()->json(['data' => []]);
         }
 
-        $files = Storage::disk('local')->files($backupName);
+        $files = $disk->files($backupName);
         $backups = [];
 
         foreach ($files as $file) {
-            // نأخذ فقط ملفات zip
             if (substr($file, -4) == '.zip') {
                 $backups[] = [
                     'path' => $file,
                     'name' => basename($file),
-                    'size' => $this->formatSize(Storage::disk('local')->size($file)),
-                    'date' => date('Y-m-d H:i:s', Storage::disk('local')->lastModified($file)),
-                    // رابط التحميل (سننشئ هذا المسار لاحقاً)
-                    // ملاحظة: التحميل سيتم عبر دالة download وليس رابط مباشر للأمان
+                    'size' => $this->formatSize($disk->size($file)),
+                    'date' => date('Y-m-d H:i:s', $disk->lastModified($file)),
                 ];
             }
         }
 
-        // ترتيب التنازلي (الأحدث أولاً)
         $backups = array_reverse($backups);
 
         return response()->json(['data' => $backups]);
@@ -54,13 +50,14 @@ class BackupController extends Controller
      */
     public function store()
     {
-        try {
-            // تشغيل الأمر في الخلفية
-            // ملاحظة: --only-db لنسخ القاعدة فقط (أسرع) إذا أردت،
-            // لكن هنا سنشغل الباكب الكامل كما ضبطناه
-            Artisan::call('backup:run');
+        // تعديل 2 (هام جداً): زيادة وقت التنفيذ
+        // عملية الباك بي تأخذ وقتاً (دقيقة أو أكثر) والريكوست العادي يموت بعد 30 ثانية
+        // هذا السطر يمنع ظهور خطأ Timeout
+        set_time_limit(0);
+        ini_set('memory_limit', '-1'); // لضمان عدم توقف السكربت بسبب الذاكرة
 
-            // نأخذ مخرجات الأمر للتأكد (اختياري)
+        try {
+            Artisan::call('backup:run');
             $output = Artisan::output();
 
             return response()->json([
@@ -80,7 +77,10 @@ class BackupController extends Controller
      */
     public function download(Request $request)
     {
-        $fileName = $request->query('file_name');
+        // تعديل 3 (أمني): استخدام basename لمنع اختراق المسارات
+        // هذا يمنع أي شخص من إرسال اسم ملف مثل "../../.env" لسرقة ملفات النظام
+        $fileName = basename($request->query('file_name'));
+
         $backupName = config('backup.backup.name');
         $path = $backupName . '/' . $fileName;
 
@@ -88,7 +88,6 @@ class BackupController extends Controller
             return response()->json(['message' => 'الملف غير موجود.'], 404);
         }
 
-        // استخدام دالة download الخاصة بـ Storage لإرسال الملف للمستخدم
         return Storage::disk('local')->download($path);
     }
 
@@ -97,7 +96,9 @@ class BackupController extends Controller
      */
     public function destroy(Request $request)
     {
-        $fileName = $request->query('file_name');
+        // نفس التعديل الأمني هنا أيضاً
+        $fileName = basename($request->query('file_name'));
+
         $backupName = config('backup.backup.name');
         $path = $backupName . '/' . $fileName;
 
@@ -109,9 +110,6 @@ class BackupController extends Controller
         return response()->json(['message' => 'الملف غير موجود.'], 404);
     }
 
-    /**
-     * دالة مساعدة لتنسيق الحجم.
-     */
     private function formatSize($bytes)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];

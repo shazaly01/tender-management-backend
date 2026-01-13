@@ -14,6 +14,7 @@ class DocumentResource extends JsonResource
         'name' => $this->name,
         'url' => $this->url,
         'documentable_id' => $this->documentable_id,
+        'extension' => strtolower(pathinfo($this->file_path, PATHINFO_EXTENSION)),
         'target_info' => $this->whenLoaded('documentable'),
         'created_at' => $this->created_at->toDateTimeString(),
     ];

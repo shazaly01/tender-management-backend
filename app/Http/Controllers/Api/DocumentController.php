@@ -17,7 +17,7 @@ class DocumentController extends Controller
     {
         // تطبيق الصلاحيات تلقائيًا
         // ملاحظة: authorizeResource لا تدعم index بشكل جيد مع الفلترة، لذا سنتحقق منها يدويًا
-        $this->authorizeResource(Document::class, 'document');
+       $this->authorizeResource(Document::class, 'document');
     }
 
    public function index(): AnonymousResourceCollection
@@ -41,45 +41,59 @@ class DocumentController extends Controller
     return DocumentResource::collection($documents);
 }
 
-   public function store(StoreDocumentRequest $request): JsonResponse
-{
-    $path = $request->file('file')->store('documents', 'public');
-
-    // تحديد الموديل بناءً على النوع المرسل
-    $modelType = $request->target_type === 'company'
-        ? \App\Models\Company::class
-        : \App\Models\Project::class;
-
-    $document = Document::create([
-        'name' => $request->name,
-        'file_path' => $path,
-        'documentable_id' => $request->target_id,
-        'documentable_type' => $modelType,
-    ]);
-
-    return response()->json([
-        'message' => 'Document uploaded successfully.',
-        'data' => DocumentResource::make($document),
-    ], Response::HTTP_CREATED);
-}
-
-
- public function show(Document $document): DocumentResource
-{
-    // تحميل العلاقة متعددة الأوجه بدلاً من الشركة فقط
-    $document->load('documentable');
-    return DocumentResource::make($document);
-}
-
-    // لا نحتاج لدالة update، لأن تحديث مستند هو عملية حذف ثم رفع
-
-   public function destroy(Document $document): Response
+ public function store(StoreDocumentRequest $request): JsonResponse
     {
-        // نكتفي بحذف السجل برمجياً (Soft Delete)
-        // يتم وضع تاريخ في عمود deleted_at
-        // يبقى الملف الفعلي آمناً في السيرفر لاستعادته في أي وقت
-        $document->delete();
+        // 1. التعديل هنا: التخزين في 'local' داخل مجلد 'private_documents'
+        // هذا المسار (storage/app/private_documents) غير متاح عبر الويب مباشرة
+        $path = $request->file('file')->store('private_documents', 'local');
 
+        $modelType = $request->target_type === 'company'
+            ? \App\Models\Company::class
+            : \App\Models\Project::class;
+
+        $document = Document::create([
+            'name' => $request->name,
+            'file_path' => $path,
+            'documentable_id' => $request->target_id,
+            'documentable_type' => $modelType,
+        ]);
+
+        return response()->json([
+            'message' => 'Document uploaded successfully.',
+            'data' => DocumentResource::make($document),
+        ], Response::HTTP_CREATED);
+    }
+
+    public function show(Document $document): DocumentResource
+    {
+        $document->load('documentable');
+        return DocumentResource::make($document);
+    }
+
+    /**
+     * دالة التحميل الجديدة
+     * يتم الوصول لها عبر الرابط الموقع فقط
+     */
+ public function download(Document $document)
+    {
+        // 1. التأكد من وجود الملف
+        if (! Storage::disk('local')->exists($document->file_path)) {
+            abort(404);
+        }
+
+        // 2. جلب المسار الحقيقي
+        $path = Storage::disk('local')->path($document->file_path);
+
+        // 3. هذا هو السطر السحري (وليس ترقيعاً)
+        // response()->file: يرسل الملف مع الهيدر "inline"
+        // هذا يسمح للمتصفح بعرضه كصورة أو PDF، ولا يجبره على التنزيل
+        return response()->file($path);
+    }
+
+    public function destroy(Document $document): Response
+    {
+        $document->delete();
         return response()->noContent();
     }
-}
+
+    }
