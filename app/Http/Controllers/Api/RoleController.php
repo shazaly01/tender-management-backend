@@ -94,10 +94,16 @@ class RoleController extends Controller
 
         // 1. قاموس الترجمة
         $groupTranslations = [
-            'dashboard' => 'لوحة التحكم', 'user' => 'المستخدمون', 'role' => 'الأدوار',
-            'company' => 'الشركات', 'station' => 'المحطات', 'driver' => 'السائقون',
-            'truck' => 'الشاحنات', 'product' => 'المنتجات', 'region' => 'المناطق',
-            'fuel_order' => 'طلبات الوقود', 'setting' => 'الإعدادات', 'order_status' => 'حالات الطلب',
+            'dashboard' => 'لوحة التحكم',
+            'user' => 'المستخدمون',
+            'role' => 'الأدوار',
+            'company' => 'الشركات',
+            'setting' => 'الإعدادات',
+            // --- الإضافات الجديدة ---
+            'project' => 'المشاريع',
+            'payment' => 'المدفوعات',
+            'document' => 'المستندات',
+            'backup' => 'النسخ الاحتياطي',
         ];
 
         $actionTranslations = [
