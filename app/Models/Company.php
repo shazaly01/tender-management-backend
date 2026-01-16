@@ -23,6 +23,9 @@ class Company extends Model
         'license_number',
         'address',
         'owner_name',
+        'phone',
+        'bank_name',
+        'account_number',
     ];
 
     /**

@@ -21,6 +21,9 @@ class StoreCompanyRequest extends FormRequest
             'license_number' => 'nullable|string|max:50|unique:companies,license_number', // <-- [تمت الإضافة هنا]
             'address' => 'nullable|string',
             'owner_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20', // حددنا الطول بـ 20 ليتناسب مع أرقام الهواتف
+            'bank_name' => 'nullable|string|max:100',
+            'account_number' => 'nullable|string|max:50',
         ];
     }
 

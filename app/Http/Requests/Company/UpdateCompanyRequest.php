@@ -45,6 +45,9 @@ class UpdateCompanyRequest extends FormRequest
 
             'address' => 'sometimes|nullable|string',
             'owner_name' => 'sometimes|nullable|string|max:255',
+            'phone' => 'nullable|string|max:20', // حددنا الطول بـ 20 ليتناسب مع أرقام الهواتف
+            'bank_name' => 'nullable|string|max:100',
+            'account_number' => 'nullable|string|max:50',
         ];
     }
 

@@ -18,6 +18,9 @@ class CompanyResource extends JsonResource
             'address' => $this->address,
             'owner_name' => $this->owner_name,
             'created_at' => $this->created_at->toDateTimeString(),
+            'phone' => $this->phone,
+            'bank_name' => $this->bank_name,
+            'account_number' => $this->account_number,
         ];
     }
 }
