@@ -32,6 +32,7 @@ class StoreProjectRequest extends FormRequest
             'due_value' => 'required|numeric|min:0',
             'award_date' => 'nullable|date',
             'company_id' => 'required|integer|exists:companies,id',
+            'has_contract_permission' => 'nullable|boolean',
         ];
     }
 

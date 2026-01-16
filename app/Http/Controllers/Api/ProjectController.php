@@ -44,6 +44,10 @@ class ProjectController extends Controller
             $query->where('company_id', $companyId);
         }
 
+        if (request()->filled('has_contract_permission')) {
+            $query->where('has_contract_permission', request()->boolean('has_contract_permission'));
+        }
+
         // 4. الترتيب والترقيم
         $projects = $query->latest()->paginate(15);
 

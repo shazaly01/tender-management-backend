@@ -19,7 +19,12 @@ class Project extends Model
         'due_value',
         'award_date',
         'company_id',
-        'calculation_option_id'
+        'calculation_option_id',
+        'has_contract_permission',
+    ];
+
+    protected $casts = [
+        'has_contract_permission' => 'boolean',
     ];
 
     // علاقة "ينتمي إلى" شركة واحدة

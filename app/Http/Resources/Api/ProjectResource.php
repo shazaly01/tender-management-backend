@@ -27,6 +27,7 @@ class ProjectResource extends JsonResource
             // تحويل القيمة إلى رقم عشري للتناسق
             'due_value' => (float) $this->due_value,
             'award_date' => $this->award_date,
+            'has_contract_permission' => (bool) $this->has_contract_permission,
 
             // === [التعديل هنا] ===
             // إضافة مجموع الدفعات.
