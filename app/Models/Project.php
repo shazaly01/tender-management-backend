@@ -17,7 +17,7 @@ class Project extends Model
         'region',
         'contract_value',
         'due_value',
-        'award_date',
+       // 'award_date',
         'company_id',
         'calculation_option_id',
         'has_contract_permission',

@@ -41,7 +41,7 @@ class UpdateProjectRequest extends FormRequest
             'calculation_option_id' => 'nullable|integer|exists:calculation_options,id',
             'contract_value' => 'nullable|numeric|min:0',
             'due_value' => 'required|numeric|min:0',
-            'award_date' => 'nullable|date',
+            //'award_date' => 'nullable|date',
             'has_contract_permission' => 'nullable|boolean',
             // عادةً لا نسمح بتغيير الشركة المرتبط بها المشروع
             // 'company_id' => 'sometimes|required|integer|exists:companies,id',
