@@ -18,7 +18,7 @@ class StoreDocumentRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             // 51200 KB = 50 MB
-            'file' => 'required|file|mimes:pdf,jpg,png,mp4,mov|max:51200',
+            'file' => 'required|file|mimes:pdf,jpg,png,mp4,mov|max:256000',
             'target_type' => 'required|in:company,project',
             'target_id' => [
                 'required',
@@ -52,7 +52,7 @@ class StoreDocumentRequest extends FormRequest
 
             'file.required' => 'يجب اختيار ملف للرفع.',
             'file.mimes' => 'نوع الملف غير مدعوم. الامتدادات المسموحة فقط: PDF, JPG, PNG, MP4, MOV.',
-            'file.max' => 'حجم الملف كبير جداً (أكبر من 50 ميغا). يرجى تقليل الحجم والمحاولة مرة أخرى.',
+            'file.max' => 'حجم الملف كبير جداً (أكبر من 250 ميغا). يرجى تقليل الحجم والمحاولة مرة أخرى.',
 
             // هذا الخطأ يظهر عندما يرفض PHP الملف قبل وصوله للارافيل
             'file.uploaded' => 'فشل رفع الملف. غالباً حجم الملف يتجاوز الحد المسموح به في إعدادات السيرفر (php.ini).',
