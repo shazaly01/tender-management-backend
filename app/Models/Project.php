@@ -12,6 +12,7 @@ class Project extends Model
 
     protected $fillable = [
         'name',
+        'owner_id',
         'project_owner',
         'contract_number',
         'region',
@@ -21,11 +22,17 @@ class Project extends Model
         'company_id',
         'calculation_option_id',
         'has_contract_permission',
+        'description',
     ];
 
     protected $casts = [
         'has_contract_permission' => 'boolean',
     ];
+
+    public function owner()
+    {
+        return $this->belongsTo(Owner::class);
+    }
 
     // علاقة "ينتمي إلى" شركة واحدة
     public function company()

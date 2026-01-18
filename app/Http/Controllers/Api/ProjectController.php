@@ -18,30 +18,39 @@ class ProjectController extends Controller
         $this->authorizeResource(Project::class, 'project');
     }
 
-   public function index(): AnonymousResourceCollection
+public function index(): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Project::class);
 
-        // 1. نبدأ الاستعلام مع العلاقات وحساب المجموع
+        // 1. نبدأ الاستعلام مع العلاقات (أضفنا owner هنا)
         $query = Project::query()
-            ->with(['company', 'calculationOption'])
+            ->with(['company', 'owner', 'calculationOption']) // <--- تم التعديل
             ->withSum('payments', 'amount');
 
-        // 2. البحث الذكي (اسم المشروع أو اسم الشركة)
+        // 2. البحث الذكي (اسم المشروع، اسم الشركة، أو اسم المالك)
         if ($search = request('search')) {
             $query->where(function($q) use ($search) {
                 // البحث في اسم المشروع
                 $q->where('name', 'like', "%{$search}%")
-                  // البحث في اسم الشركة المرتبطة عبر العلاقة
+                  // البحث في اسم الشركة
                   ->orWhereHas('company', function($companyQuery) use ($search) {
                       $companyQuery->where('name', 'like', "%{$search}%");
+                  })
+                  // البحث في اسم المالك (الجديد)
+                  ->orWhereHas('owner', function($ownerQuery) use ($search) {
+                      $ownerQuery->where('name', 'like', "%{$search}%");
                   });
             });
         }
 
-        // 3. فلترة الشركة (إذا تم اختيار شركة محددة من القائمة المنسدلة)
+        // 3. الفلاتر
         if ($companyId = request('company_id')) {
             $query->where('company_id', $companyId);
+        }
+
+        // فلتر المالك الجديد (إضافة مفيدة للمستقبل)
+        if ($ownerId = request('owner_id')) {
+            $query->where('owner_id', $ownerId);
         }
 
         if (request()->filled('has_contract_permission')) {
@@ -53,6 +62,7 @@ class ProjectController extends Controller
 
         return ProjectResource::collection($projects);
     }
+
 
     public function store(StoreProjectRequest $request): JsonResponse
     {

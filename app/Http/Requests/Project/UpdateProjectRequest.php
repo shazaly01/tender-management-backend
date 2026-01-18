@@ -25,6 +25,7 @@ class UpdateProjectRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|required|string|max:255',
+            'owner_id' => 'nullable|integer|exists:owners,id',
             'project_owner' => 'nullable|string|max:255',
             'contract_number' => [
     'nullable',
@@ -41,6 +42,7 @@ class UpdateProjectRequest extends FormRequest
             'calculation_option_id' => 'nullable|integer|exists:calculation_options,id',
             'contract_value' => 'nullable|numeric|min:0',
             'due_value' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
             //'award_date' => 'nullable|date',
             'has_contract_permission' => 'nullable|boolean',
             // عادةً لا نسمح بتغيير الشركة المرتبط بها المشروع

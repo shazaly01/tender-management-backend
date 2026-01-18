@@ -12,6 +12,9 @@ class ProjectResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'owner_id' => $this->owner_id,
+            // 2. نرسل كائن المالك كاملاً (إذا تم تحميله) لعرض اسمه في الجدول
+            'owner' => new OwnerResource($this->whenLoaded('owner')),
             'project_owner' => $this->project_owner,
             'contract_number' => $this->contract_number,
             'region' => $this->region,
@@ -28,6 +31,7 @@ class ProjectResource extends JsonResource
             'due_value' => (float) $this->due_value,
            // 'award_date' => $this->award_date,
             'has_contract_permission' => (bool) $this->has_contract_permission,
+            'description' => $this->description,
 
             // === [التعديل هنا] ===
             // إضافة مجموع الدفعات.
