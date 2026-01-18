@@ -17,7 +17,6 @@ class StoreDocumentRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            // 51200 KB = 50 MB
             'file' => 'required|file|mimes:pdf,jpg,png,mp4,mov|max:256000',
             'target_type' => 'required|in:company,project',
             'target_id' => [

@@ -104,6 +104,7 @@ class RoleController extends Controller
             'payment' => 'المدفوعات',
             'document' => 'المستندات',
             'backup' => 'النسخ الاحتياطي',
+            'owner' => 'الجهه المالكة',
         ];
 
         $actionTranslations = [
