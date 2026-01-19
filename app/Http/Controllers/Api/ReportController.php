@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\JsonResponse;
+use App\Models\Owner;
 
 class ReportController extends Controller
 {
@@ -106,6 +107,64 @@ class ReportController extends Controller
                     // --- [التعديل هنا] ---
                     // تم تغيير أسماء المفاتيح في ملخص كشف الحساب
                     'total_due_value' => $totalDueValue, // <--- تم التغيير
+                    'total_contract_value' => $projectsData->sum('contract_value'),
+                    'total_payments_received' => $totalPaymentsReceived,
+                    'total_remaining' => $totalDueValue - $totalPaymentsReceived,
+                ]
+            ]
+        ]);
+    }
+
+
+
+    /**
+     * +++ [جديد] كشف حساب لجهة مالكة معينة +++
+     */
+    public function ownerStatement(Owner $owner): JsonResponse
+    {
+        // 1. نجلب كل المشاريع المرتبطة بهذا المالك
+        // نحتاج أيضاً معرفة "الشركة" المنفذة لكل مشروع (with company)
+        $projects = $owner->projects()
+            ->with('company')
+            ->withSum('payments', 'amount')
+            ->get();
+
+        // 2. تنسيق بيانات المشاريع
+        $projectsData = $projects->map(function ($project) {
+            $totalPaid = $project->payments_sum_amount ?? 0;
+            return [
+                'id' => $project->id,
+                'name' => $project->name,
+                'contract_value' => (float) $project->contract_value,
+                'contract_number' => $project->contract_number,
+                'region' => $project->region,
+                'due_value' => (float) $project->due_value,
+                'total_paid' => (float) $totalPaid,
+                'remaining' => (float) $project->due_value - $totalPaid,
+
+                // بيانات الشركة المنفذة (مهمة في تقرير المالك)
+                'company' => $project->company ? [
+                    'id' => $project->company->id,
+                    'name' => $project->company->name,
+                ] : null,
+            ];
+        });
+
+        // 3. حساب الإجماليات
+        $totalDueValue = $projectsData->sum('due_value');
+        $totalPaymentsReceived = $projectsData->sum('total_paid');
+
+        // 4. إرجاع الاستجابة بنفس هيكلية كشف حساب الشركة لسهولة التعامل في الفرونت
+        return response()->json([
+            'data' => [
+                'owner' => [ // بدلاً من company، نعيد owner
+                    'id' => $owner->id,
+                    'name' => $owner->name,
+                    // أي بيانات أخرى للمالك إذا وجدت
+                ],
+                'projects' => $projectsData,
+                'summary' => [
+                    'total_due_value' => $totalDueValue,
                     'total_contract_value' => $projectsData->sum('contract_value'),
                     'total_payments_received' => $totalPaymentsReceived,
                     'total_remaining' => $totalDueValue - $totalPaymentsReceived,

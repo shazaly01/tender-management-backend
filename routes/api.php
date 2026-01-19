@@ -76,6 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/company-statement/{company}', [ReportController::class, 'companyStatement'])
              ->middleware('can:view,company'); // يمكن فقط لمن يرى الشركة أن يرى تقريرها
+
+
+             Route::get('/owner-statement/{owner}', [ReportController::class, 'ownerStatement'])
+        ->middleware('can:owner.view');
     });
 
     // تسجيل الخروج
